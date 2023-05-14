@@ -26,7 +26,7 @@ export const Table = (props) => {
   return (
     <>
       <DataGrid
-        sx={{ height: "50vh" }}
+        sx={{ height: rows.length ? "inherit" : "50vh" }}
         rows={rows}
         getRowId={getRowId}
         loading={rows.length === 0 ? true : false}
