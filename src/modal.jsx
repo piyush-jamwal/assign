@@ -1,11 +1,9 @@
 import * as React from "react";
 import PropTypes from "prop-types";
-import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import Typography from "@mui/material/Typography";
@@ -13,7 +11,7 @@ import { apiUrl } from "./constants/constants";
 import RocketIcon from "@mui/icons-material/Rocket";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import LanguageIcon from "@mui/icons-material/Language";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -67,23 +65,22 @@ const params = {
 export default function CustomizedDialogs(props) {
   //   const [open, setOpen] = React.useState(props.dialog.open);
   const { dialog, setClose } = props;
+  const [loader, setLoader] = React.useState(false);
   const [data, setData] = React.useState([]);
   React.useEffect(() => {
     let queryUrl = apiUrl;
-    console.log("fetch response", dialog.flight_number, props.dialog);
+    setLoader(true);
     fetch(`${queryUrl}/${dialog.flight_number}`)
       .then((res) => res.json())
       .then((res) => {
         setData(res);
-        console.log("fetch response", res);
-      });
+        setLoader(false);
+      })
+      .catch((err) => setLoader(false));
   }, [props.dialog]);
-  const handleClickOpen = () => {
-    // setOpen(true);
-  };
+
   const handleClose = () => {
     setClose();
-    // setOpen(false);
   };
 
   return (
@@ -184,6 +181,11 @@ export default function CustomizedDialogs(props) {
             value={data?.launch_site?.site_name}
           />
         </Box>
+        {loader && (
+          <CircularProgress
+            sx={{ position: "absolute", top: "60%", left: "50%" }}
+          />
+        )}
       </BootstrapDialog>
     </div>
   );

@@ -6,29 +6,18 @@ import {
   Select,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridOverlay } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import Image from "./assets/SpaceX-Logo.png";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
-import {
-  Outlet,
-  unstable_HistoryRouter,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
-import {
-  apiUrl,
-  columns,
-  filterConstants,
-  options,
-} from "./constants/constants";
+import { useLocation, useNavigate } from "react-router-dom";
+import { apiUrl, filterConstants, options } from "./constants/constants";
 import FullScreenDialog from "./modal";
-// const columns = [{ field: "mission_name", headerName: "ID", width: 90 }];
+import { Table } from "./table";
 
 export const Dashboard = () => {
   const [data, setData] = useState([]);
-  const [loader, setLoader] = useState(false);
   const [menuOptions, setMenuOptions] = useState(options.all);
   const [url, setUrl] = useState(apiUrl);
   const [dialog, setDialog] = useState({ open: false, flight_number: null });
@@ -72,16 +61,15 @@ export const Dashboard = () => {
     } else {
       queryUrl += "?id=true";
     }
-    setLoader(true);
+
     fetch(`${queryUrl}`)
       .then((res) => res.json())
       .then((res) => {
         setData(res);
-        setLoader(false);
       })
-      .catch((err) => setLoader(false));
+      .catch((err) => console.log(err));
   }, [pastLaunch, filter]);
-  const getRowId = (row) => row._id;
+
   const handleFilter1 = (event) => {
     switch (event.target.value) {
       case "all":
@@ -128,10 +116,7 @@ export const Dashboard = () => {
         break;
     }
   };
-  const handleRowClick = (event) => {
-    console.log("event value", event);
-    setDialog({ flight_number: event.row.flight_number, open: true });
-  };
+
   return (
     <>
       <nav style={{ color: "grey", boxShadow: "0px 2px 10px 1px" }}>
@@ -171,24 +156,8 @@ export const Dashboard = () => {
             </Select>
           </FormControl>
         </section>
-        {loader && <CircularProgress />}
-        {/* <Outlet /> */}
-        <DataGrid
-          rows={data}
-          getRowId={getRowId}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 8,
-              },
-            },
-          }}
-          pageSizeOptions={[5]}
-          checkboxSelection={false}
-          disableRowSelectionOnClick={false}
-          onRowClick={handleRowClick}
-        />
+
+        <Table rows={data} setDialog={setDialog} />
         <FullScreenDialog
           dialog={dialog}
           setClose={() => setDialog({ open: false, flight_number: null })}
