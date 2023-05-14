@@ -1,4 +1,10 @@
-import { Box, FormControl, MenuItem, Select } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  FormControl,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
@@ -22,6 +28,7 @@ import FullScreenDialog from "./modal";
 
 export const Dashboard = () => {
   const [data, setData] = useState([]);
+  const [loader, setLoader] = useState(false);
   const [menuOptions, setMenuOptions] = useState(options.all);
   const [url, setUrl] = useState(apiUrl);
   const [dialog, setDialog] = useState({ open: false, flight_number: null });
@@ -30,12 +37,25 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  //   console.log(" query", queryParams.get("filter"));
+  console.log("query parameters", queryParams.get("history"));
   useEffect(() => {
     let queryUrl = url;
     const filterBy = queryParams.get("filter");
     const sortByHistory = queryParams.get("history");
-    console.log("filter", filterBy);
+
+    if (filterBy && sortByHistory) {
+      setPastLaunch(sortByHistory);
+      setFilter(filterBy);
+      setMenuOptions(options.past_six_month);
+    } else if (filterBy && !sortByHistory) {
+      setPastLaunch("all");
+      setFilter(filterBy);
+      setMenuOptions(options.all);
+    } else if (sortByHistory) {
+      setPastLaunch(sortByHistory);
+      setFilter(sortByHistory);
+      setMenuOptions(options.past_six_month);
+    }
     if (filterBy) {
       switch (filterBy) {
         case "launch_success":
@@ -52,13 +72,14 @@ export const Dashboard = () => {
     } else {
       queryUrl += "?id=true";
     }
-    console.log(" query url", queryUrl);
+    setLoader(true);
     fetch(`${queryUrl}`)
       .then((res) => res.json())
       .then((res) => {
         setData(res);
-        // console.log(res.data);
-      });
+        setLoader(false);
+      })
+      .catch((err) => setLoader(false));
   }, [pastLaunch, filter]);
   const getRowId = (row) => row._id;
   const handleFilter1 = (event) => {
@@ -66,11 +87,14 @@ export const Dashboard = () => {
       case "all":
         setPastLaunch("all");
         setUrl(apiUrl);
+        setFilter("/");
         setMenuOptions(options.all);
+        navigate("/");
         break;
       default:
         setPastLaunch("past");
         setUrl(`${apiUrl}/past`);
+        setFilter(filterConstants.past_launches);
         setMenuOptions(options.past_six_month);
         navigate("?history=past");
         break;
@@ -81,7 +105,6 @@ export const Dashboard = () => {
     if (pastLaunch === filterConstants.past_launches) {
       navigationUrl = "?history=past&";
     }
-    // console.log("value coming", event.target.value);
     switch (event.target.value) {
       case filterConstants.upcoming_launches:
         setFilter(filterConstants.upcoming_launches);
@@ -96,6 +119,7 @@ export const Dashboard = () => {
         navigate(`${navigationUrl}filter=launch_failure`);
         break;
       case filterConstants.past_launches:
+        setFilter(filterConstants.past_launches);
         navigate("?history=past");
         break;
       default:
@@ -147,6 +171,7 @@ export const Dashboard = () => {
             </Select>
           </FormControl>
         </section>
+        {loader && <CircularProgress />}
         {/* <Outlet /> */}
         <DataGrid
           rows={data}

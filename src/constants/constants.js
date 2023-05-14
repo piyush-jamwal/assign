@@ -1,3 +1,5 @@
+import { Status } from "../modal";
+
 export const columns = [
   { field: "flight_number", headerName: "No", width: 90 },
   {
@@ -31,8 +33,9 @@ export const columns = [
     description: "This column has a value getter and is not sortable.",
 
     width: 160,
-    // valueGetter: (params) =>
-    //   `${params.row.firstName || ""} ${params.row.lastName || ""}`,
+    renderCell: (params) => {
+      return <Status status={params?.row?.launch_success} />;
+    },
   },
   {
     field: "rocket",

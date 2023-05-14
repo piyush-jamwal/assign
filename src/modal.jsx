@@ -188,12 +188,11 @@ export default function CustomizedDialogs(props) {
     </div>
   );
 }
-const Status = (props) => {
+export const Status = (props) => {
   return (
     <Box
       sx={{
         display: "flex",
-        alignSelf: "flex-start",
         fontSize: 15,
         justifyContent: "center",
         alignItems: "center",
